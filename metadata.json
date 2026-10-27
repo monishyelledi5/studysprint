@@ -1,0 +1,6 @@
+{
+  "name": "StudySprint - Student Study & Exam Companion",
+  "description": "All-in-one study manager for college students to track courses, assignments, exam countdowns, focus timer, and weekly study consistency.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
