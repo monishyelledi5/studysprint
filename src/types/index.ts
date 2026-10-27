@@ -5,10 +5,11 @@ export type TaskType = 'assignment' | 'revision' | 'reading' | 'project' | 'lab'
 export interface Subject {
   id: string;
   name: string;
-  code: string;
+  code?: string;
   color: string; // e.g. '#2563EB', '#0D9488', '#059669', '#D97706', '#7C3AED', '#E11D48', '#475569'
+  icon?: string; // e.g. 'book', 'code', 'calculator', 'flask', 'brain', 'globe'
   instructor?: string;
-  weeklyGoalHours: number;
+  weeklyGoalHours?: number;
   notes?: string;
 }
 
@@ -55,6 +56,7 @@ export interface UserSettings {
   pomodoroShortBreakMins: number;
   pomodoroLongBreakMins: number;
   soundEnabled: boolean;
+  isProfileSetup: boolean;
   isSampleDataLoaded: boolean;
 }
 

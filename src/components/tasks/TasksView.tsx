@@ -278,7 +278,7 @@ export const TasksView: React.FC = () => {
                     <div className="flex flex-wrap items-center gap-2 mt-1.5 text-xs text-slate-500 dark:text-slate-400">
                       {subject && (
                         <span className="font-semibold" style={{ color: subject.color }}>
-                          {subject.code}
+                          {subject.code || subject.name}
                         </span>
                       )}
                       <span aria-hidden="true">·</span>

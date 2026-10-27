@@ -1,5 +1,23 @@
 import { Exam, Subject, Task, StudySession, UserSettings } from '../types';
 
+export interface PresetColor {
+  name: string;
+  hex: string;
+}
+
+export const PRESET_COLORS: PresetColor[] = [
+  { name: 'Royal Blue', hex: '#2563EB' },
+  { name: 'Indigo', hex: '#6366F1' },
+  { name: 'Purple', hex: '#9333EA' },
+  { name: 'Emerald', hex: '#059669' },
+  { name: 'Teal', hex: '#0D9488' },
+  { name: 'Amber', hex: '#D97706' },
+  { name: 'Rose', hex: '#E11D48' },
+  { name: 'Crimson', hex: '#DC2626' },
+  { name: 'Slate', hex: '#475569' },
+  { name: 'Cyan', hex: '#0891B2' },
+];
+
 export function getSampleData() {
   const now = new Date();
 
@@ -259,6 +277,7 @@ export function getSampleData() {
     pomodoroShortBreakMins: 5,
     pomodoroLongBreakMins: 15,
     soundEnabled: true,
+    isProfileSetup: true,
     isSampleDataLoaded: true,
   };
 

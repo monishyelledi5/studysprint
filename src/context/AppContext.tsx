@@ -79,6 +79,9 @@ interface AppContextType {
   streak: StreakData;
   isStreakActiveToday: boolean;
   testRecordStudyActivityDate: (dateStr: string) => void;
+
+  // Profile onboarding
+  completeProfile: (name: string, major?: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -86,7 +89,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentView, setCurrentView] = useState<ViewType>('dashboard');
 
-  // Load initial states from localStorage or generate sample data
+  // Load initial states from localStorage (defaults to clean empty state for new users)
   const [subjects, setSubjects] = useState<Subject[]>(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEYS.SUBJECTS);
@@ -94,7 +97,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } catch {
       // ignore
     }
-    return getSampleData().subjects;
+    return [];
   });
 
   const [tasks, setTasks] = useState<Task[]>(() => {
@@ -104,7 +107,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } catch {
       // ignore
     }
-    return getSampleData().tasks;
+    return [];
   });
 
   const [exams, setExams] = useState<Exam[]>(() => {
@@ -114,7 +117,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } catch {
       // ignore
     }
-    return getSampleData().exams;
+    return [];
   });
 
   const [studySessions, setStudySessions] = useState<StudySession[]>(() => {
@@ -124,20 +127,40 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } catch {
       // ignore
     }
-    return getSampleData().studySessions;
+    return [];
   });
 
   const [settings, setSettings] = useState<UserSettings>(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEYS.SETTINGS);
-      if (stored) return JSON.parse(stored);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        const isDefaultAlex = parsed.name === 'Alex Rivera' || parsed.name === 'Alex';
+        return {
+          ...parsed,
+          name: isDefaultAlex ? '' : (parsed.name || ''),
+          isProfileSetup: !isDefaultAlex && Boolean(parsed.name && parsed.name.trim()),
+          isSampleDataLoaded: Boolean(parsed.isSampleDataLoaded),
+        };
+      }
     } catch {
       // ignore
     }
-    return getSampleData().settings;
+    return {
+      name: '',
+      major: '',
+      semester: 'Current Semester',
+      theme: 'light',
+      pomodoroStudyMins: 25,
+      pomodoroShortBreakMins: 5,
+      pomodoroLongBreakMins: 15,
+      soundEnabled: true,
+      isProfileSetup: false,
+      isSampleDataLoaded: false,
+    };
   });
 
-  // Streak State & History
+  // Streak State & History (default 0 for new users)
   const [savedActiveDates, setSavedActiveDates] = useState<string[]>(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEYS.STREAK);
@@ -148,7 +171,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } catch {
       // ignore
     }
-    return getSampleData().streak.activeDates;
+    return [];
   });
 
   const [storedLongestStreak, setStoredLongestStreak] = useState<number>(() => {
@@ -161,7 +184,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } catch {
       // ignore
     }
-    return getSampleData().streak.longestStreak;
+    return 0;
   });
 
   // Calculate live streak based on completed tasks, study sessions, and saved active dates
@@ -553,6 +576,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     showToast('Exam removed', 'info');
   };
 
+  // Profile onboarding
+  const completeProfile = (name: string, major?: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    setSettings(prev => ({
+      ...prev,
+      name: trimmed,
+      major: major ? major.trim() : prev.major,
+      isProfileSetup: true,
+    }));
+    showToast(`Welcome to StudySprint, ${trimmed}!`, 'success');
+  };
+
   // Settings Handlers
   const updateSettings = (updates: Partial<UserSettings>) => {
     setSettings(prev => ({ ...prev, ...updates }));
@@ -566,15 +602,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setStudySessions([]);
     setSavedActiveDates([]);
     setStoredLongestStreak(0);
-    setSettings(prev => ({ ...prev, isSampleDataLoaded: false }));
+    setSettings(prev => ({
+      ...prev,
+      name: '',
+      major: '',
+      isProfileSetup: false,
+      isSampleDataLoaded: false,
+    }));
     try {
       localStorage.removeItem(STORAGE_KEYS.SUBJECTS);
       localStorage.removeItem(STORAGE_KEYS.TASKS);
       localStorage.removeItem(STORAGE_KEYS.EXAMS);
       localStorage.removeItem(STORAGE_KEYS.SESSIONS);
       localStorage.removeItem(STORAGE_KEYS.STREAK);
+      localStorage.removeItem(STORAGE_KEYS.SETTINGS);
     } catch { /* ignore */ }
-    showToast('All data and streaks have been cleared', 'info');
+    showToast('All data has been cleared', 'info');
   };
 
   const resetToSampleData = () => {
@@ -585,8 +628,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setStudySessions(sample.studySessions);
     setSavedActiveDates(sample.streak.activeDates);
     setStoredLongestStreak(sample.streak.longestStreak);
-    setSettings(sample.settings);
-    showToast('Loaded realistic sample college data', 'success');
+    setSettings(prev => ({
+      ...sample.settings,
+      name: prev.name || 'Student',
+      isProfileSetup: true,
+      theme: prev.theme,
+    }));
+    showToast('Loaded demo college courses and tasks', 'success');
   };
 
   // Modal helpers
@@ -670,6 +718,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         streak,
         isStreakActiveToday,
         testRecordStudyActivityDate,
+        completeProfile,
       }}
     >
       {children}

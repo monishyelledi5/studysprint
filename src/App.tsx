@@ -14,12 +14,23 @@ import { SettingsView } from './components/settings/SettingsView';
 import { TaskModal } from './components/modals/TaskModal';
 import { SubjectModal } from './components/modals/SubjectModal';
 import { ExamModal } from './components/modals/ExamModal';
+import { WelcomeScreen } from './components/welcome/WelcomeScreen';
 import { LayoutDashboard, CheckSquare, BookOpen, CalendarClock, Timer } from 'lucide-react';
 import { ViewType } from './types';
 
 const MainLayout: React.FC = () => {
-  const { currentView, setCurrentView } = useApp();
+  const { currentView, setCurrentView, settings } = useApp();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // If new user has not completed onboarding name setup, show Welcome screen
+  if (!settings.isProfileSetup || !settings.name.trim()) {
+    return (
+      <>
+        <WelcomeScreen />
+        <NotificationToast />
+      </>
+    );
+  }
 
   const renderActiveView = () => {
     switch (currentView) {

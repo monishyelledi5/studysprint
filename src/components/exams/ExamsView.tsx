@@ -69,7 +69,7 @@ export const ExamsView: React.FC = () => {
               <option value="all">All Subjects</option>
               {subjects.map(s => (
                 <option key={s.id} value={s.id}>
-                  {s.code}
+                  {s.code ? `${s.code} - ${s.name}` : s.name}
                 </option>
               ))}
             </select>

@@ -39,16 +39,29 @@ export const SettingsView: React.FC = () => {
   const [longBreakMins, setLongBreakMins] = useState(settings.pomodoroLongBreakMins);
 
   const [customTestDate, setCustomTestDate] = useState('');
-
   const [showClearConfirmModal, setShowClearConfirmModal] = useState(false);
   const [showResetConfirmModal, setShowResetConfirmModal] = useState(false);
+  const [nameError, setNameError] = useState('');
+
+  React.useEffect(() => {
+    setName(settings.name);
+    setMajor(settings.major);
+    setSemester(settings.semester);
+  }, [settings.name, settings.major, settings.semester]);
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
+    const trimmed = name.trim();
+    if (!trimmed) {
+      setNameError('Please enter a student name');
+      return;
+    }
+    setNameError('');
     updateSettings({
-      name: name.trim() || 'Alex Rivera',
+      name: trimmed,
       major: major.trim(),
       semester: semester.trim(),
+      isProfileSetup: true,
     });
   };
 
@@ -196,9 +209,17 @@ export const SettingsView: React.FC = () => {
               type="text"
               required
               value={name}
-              onChange={e => setName(e.target.value)}
+              onChange={e => {
+                setName(e.target.value);
+                if (nameError) setNameError('');
+              }}
               className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
             />
+            {nameError && (
+              <p className="mt-1.5 text-xs text-rose-500 font-medium">
+                {nameError}
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
